@@ -58,11 +58,13 @@ class Extension {
         log(`Writing to file`);
         const file_path = GLib.build_filenamev([GLib.get_home_dir(), 'mpv-window-details.log']);
         const file = Gio.File.new_for_path(file_path);
-        const outputStreamAppend = file.append_to(Gio.FileCreateFlags.NONE, null);
+        const outputStream = file.replace(null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+        // const outputStreamAppend = file.append_to(Gio.FileCreateFlags.NONE, null);
 
         let to_write = `Latest Values: x=${x}, y=${y}, width=${width}, height=${height}`;
 
-        outputStreamAppend.write_all(to_write, null);
+        // outputStreamAppend.write_all(to_write, null);
+        outputStream.write(to_write, null);
     }
 }
 
