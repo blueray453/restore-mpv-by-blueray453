@@ -17,7 +17,7 @@
  */
 
 /* exported init */
-const { GObject, Meta } = imports.gi;
+const { Gio, GLib, GObject, Meta } = imports.gi;
 
 class Extension {
     enable() {
@@ -49,7 +49,20 @@ class Extension {
             let height = frameRect.height;
 
             log(`window changed: with id ${winid} and class ${wm_class} and ${wm_class_instance}where width is ${width} height is ${height} x is ${x} y is ${y}`);
+
+            this.writeToFile(x, y, width, height);
         }
+    }
+
+    writeToFile(x, y, width, height) {
+        log(`Writing to file`);
+        const file_path = GLib.build_filenamev([GLib.get_home_dir(), 'mpv-window-details.log']);
+        const file = Gio.File.new_for_path(file_path);
+        const outputStreamAppend = file.append_to(Gio.FileCreateFlags.NONE, null);
+
+        let to_write = `Latest Values: x=${x}, y=${y}, width=${width}, height=${height}`;
+
+        outputStreamAppend.write_all(to_write, null);
     }
 }
 
