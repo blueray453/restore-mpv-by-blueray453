@@ -19,43 +19,31 @@
 /* exported init */
 const { GObject, Meta } = imports.gi;
 
-var MyExtension = class MyExtension {
-    constructor() {
-        this._signalHandlers = [];
-    }
-
+class Extension {
     enable() {
-        // Connect the signal handlers when the extension is enabled
-        this._signalHandlers.push(global.display.connect('window-created', this._onWindowCreated.bind(this)));
+        global.display.connect('window-created', this.onWindowCreated.bind(this));
+        log(`restore mpv Enabled`);
     }
 
     disable() {
         // Disconnect all signal handlers when the extension is disabled
-        this._signalHandlers.forEach(handler => global.display.disconnect(handler));
+        log(`restore mpv Disabled`);
     }
 
-    _onWindowCreated(display, window) {
-        // Check if the newly created window matches the desired criteria
-        if (window.get_wm_class_instance() === 'gl' && window.get_wm_class() === 'mpv') {
-            // Connect position-changed and size-changed signals for the matching window
-            this._signalHandlers.push(window.connect('position-changed', this._onWindowPositionChanged.bind(this, window)));
-            this._signalHandlers.push(window.connect('size-changed', this._onWindowSizeChanged.bind(this, window)));
-        }
+    onWindowCreated(display, window) {
+        // Connect to the position-changed and size-changed signals for the new window
+        log(`New window created: with id ${window.get_id()}`);
+        window.connect('position-changed', this.onChanged.bind(this));
+        window.connect('size-changed', this.onChanged.bind(this));
     }
 
-    _onWindowPositionChanged(window, actor, event) {
-        // Handle position change event for the specified window
-        let [x, y] = actor.get_position();
-        log(`Window position changed: (${x}, ${y})`);
+    onChanged(window) {
+        // Handle position change event
+        log(`Changed window: with id ${window.get_id()}`);
+        // You can perform actions based on the new position here
     }
-
-    _onWindowSizeChanged(window, actor, event) {
-        // Handle size change event for the specified window
-        let [width, height] = actor.get_size();
-        log(`Window size changed: ${width}x${height}`);
-    }
-};
+}
 
 function init() {
-    return new MyExtension();
+    return new Extension();
 }
