@@ -87,11 +87,11 @@ class Extension {
                         //     return GLib.SOURCE_REMOVE;
                         // });
 
-                        let act = window.get_compositor_private();
-                        let id = act.connect('first-frame', _ => {
+                        let actor = window.get_compositor_private();
+                        let id = actor.connect('first-frame', _ => {
                             log(`line before move_resize_frame`);
                             window.move_resize_frame(1, x, y, width, height);
-                            act.disconnect(id);
+                            actor.disconnect(id);
                         });
 
                         window.activate(0);
