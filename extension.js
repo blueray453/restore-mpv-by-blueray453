@@ -31,7 +31,7 @@ class Extension {
     }
 
     onWindowCreated(display, window) {
-        log(`New window created: with id ${window.get_id()}`);
+        // log(`New window created: with id ${window.get_id()}`);
         window.connect('position-changed', this.onChanged.bind(this));
         window.connect('size-changed', this.onChanged.bind(this));
     }
@@ -48,7 +48,7 @@ class Extension {
             let width = frameRect.width;
             let height = frameRect.height;
 
-            log(`window changed: with id ${winid} and class ${wm_class} and ${wm_class_instance}where width is ${width} height is ${height} x is ${x} y is ${y}`);
+            // log(`window changed: with id ${winid} and class ${wm_class} and ${wm_class_instance}where width is ${width} height is ${height} x is ${x} y is ${y}`);
 
             this.writeToFile(x, y, width, height);
         }
@@ -61,7 +61,14 @@ class Extension {
         const outputStream = file.replace(null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
         // const outputStreamAppend = file.append_to(Gio.FileCreateFlags.NONE, null);
 
-        let to_write = `Latest Values: x=${x}, y=${y}, width=${width}, height=${height}`;
+        let data = {
+            x: x,
+            y: y,
+            width: width,
+            height: height
+        };
+
+        let to_write = JSON.stringify(data);
 
         // outputStreamAppend.write_all(to_write, null);
         outputStream.write(to_write, null);
