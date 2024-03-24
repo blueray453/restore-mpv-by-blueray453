@@ -37,8 +37,23 @@ class Extension {
         let wm_class_instance = window.get_wm_class_instance();
 
         if (wm_class === "mpv" && wm_class_instance === "gl") {
-            window.connect('position-changed', this.onChanged.bind(this));
-            window.connect('size-changed', this.onChanged.bind(this));
+            const windowManager = global.window_manager;
+            let id = windowManager.connect('destroy', (_, actor) => {
+                // log(`Window is about to close`);
+                let window = actor.get_meta_window();
+                let frameRect = window.get_frame_rect();
+                let x = frameRect.x;
+                let y = frameRect.y;
+                let width = frameRect.width;
+                let height = frameRect.height;
+
+                log(`window properties before close: width ${width}, height ${height}, x ${x} and y ${y}`);
+
+                this.writeToFile(x, y, width, height);
+                actor.disconnect(id);
+            });
+            // window.connect('position-changed', this.onChanged.bind(this));
+            // window.connect('size-changed', this.onChanged.bind(this));
             this.restoreWindow(window);
         }
     }
@@ -66,18 +81,18 @@ class Extension {
                         log(`Resizing window to: width ${width}, height ${height}, x ${x}, and y ${y}`);
                         // window.move_resize_frame(1, x, y, width, height);
 
-                        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                            // log(`line before move_resize_frame`);
-                            window.move_resize_frame(1, x, y, width, height);
-                            return GLib.SOURCE_REMOVE;
-                        });
-
-                        // let act = window.get_compositor_private();
-                        // let id = act.connect('first-frame', _ => {
-                        //     log(`line before move_resize_frame`);
+                        // GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                        //     // log(`line before move_resize_frame`);
                         //     window.move_resize_frame(1, x, y, width, height);
-                        //     act.disconnect(id);
+                        //     return GLib.SOURCE_REMOVE;
                         // });
+
+                        let act = window.get_compositor_private();
+                        let id = act.connect('first-frame', _ => {
+                            log(`line before move_resize_frame`);
+                            window.move_resize_frame(1, x, y, width, height);
+                            act.disconnect(id);
+                        });
 
                         window.activate(0);
 
@@ -95,23 +110,23 @@ class Extension {
         }
     }
 
-    onChanged(window) {
-        // let winid = window.get_id();
-        let wm_class = window.get_wm_class();
-        let wm_class_instance = window.get_wm_class_instance();
+    // onChanged(window) {
+    //     // let winid = window.get_id();
+    //     let wm_class = window.get_wm_class();
+    //     let wm_class_instance = window.get_wm_class_instance();
 
-        if (wm_class === "mpv" && wm_class_instance === "gl") {
-            let frameRect = window.get_frame_rect();
-            let x = frameRect.x;
-            let y = frameRect.y;
-            let width = frameRect.width;
-            let height = frameRect.height;
+    //     if (wm_class === "mpv" && wm_class_instance === "gl") {
+    //         let frameRect = window.get_frame_rect();
+    //         let x = frameRect.x;
+    //         let y = frameRect.y;
+    //         let width = frameRect.width;
+    //         let height = frameRect.height;
 
-            // log(`window changed: with id ${winid} and class ${wm_class} and ${wm_class_instance}where width is ${width} height is ${height} x is ${x} y is ${y}`);
+    //         // log(`window changed: with id ${winid} and class ${wm_class} and ${wm_class_instance}where width is ${width} height is ${height} x is ${x} y is ${y}`);
 
-            this.writeToFile(x, y, width, height);
-        }
-    }
+    //         this.writeToFile(x, y, width, height);
+    //     }
+    // }
 
     writeToFile(x, y, width, height) {
         log(`Writing to file`);
