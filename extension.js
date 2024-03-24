@@ -67,9 +67,17 @@ class Extension {
                         // window.move_resize_frame(1, x, y, width, height);
 
                         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                            // log(`line before move_resize_frame`);
                             window.move_resize_frame(1, x, y, width, height);
                             return GLib.SOURCE_REMOVE;
                         });
+
+                        // let act = window.get_compositor_private();
+                        // let id = act.connect('first-frame', _ => {
+                        //     log(`line before move_resize_frame`);
+                        //     window.move_resize_frame(1, x, y, width, height);
+                        //     act.disconnect(id);
+                        // });
 
                         window.activate(0);
 
