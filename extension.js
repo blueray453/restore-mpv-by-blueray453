@@ -31,16 +31,23 @@ class Extension {
     }
 
     onWindowCreated(display, window) {
-        // Connect to the position-changed and size-changed signals for the new window
         log(`New window created: with id ${window.get_id()}`);
         window.connect('position-changed', this.onChanged.bind(this));
         window.connect('size-changed', this.onChanged.bind(this));
     }
 
     onChanged(window) {
-        // Handle position change event
-        log(`Changed window: with id ${window.get_id()}`);
-        // You can perform actions based on the new position here
+        let winid = window.get_id();
+        let wm_class = window.get_wm_class();
+        let wm_class_instance = window.get_wm_class_instance();
+
+        let frameRect = window.get_frame_rect();
+        let x = frameRect.x;
+        let y = frameRect.y;
+        let width = frameRect.width;
+        let height = frameRect.height;
+
+        log(`window changed: with id ${winid} and class ${wm_class} and ${wm_class_instance}where width is ${width} height is ${height} x is ${x} y is ${y}`);
     }
 }
 
