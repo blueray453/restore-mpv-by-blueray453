@@ -32,12 +32,44 @@ class Extension {
 
     onWindowCreated(display, window) {
         // log(`New window created: with id ${window.get_id()}`);
-        window.connect('position-changed', this.onChanged.bind(this));
-        window.connect('size-changed', this.onChanged.bind(this));
+
+        let wm_class = window.get_wm_class();
+        let wm_class_instance = window.get_wm_class_instance();
+
+        if (wm_class === "mpv" && wm_class_instance === "gl") {
+            window.connect('position-changed', this.onChanged.bind(this));
+            window.connect('size-changed', this.onChanged.bind(this));
+            this.restoreWindow(window);
+        }
+    }
+
+    restoreWindow(window) {
+        log(`restoring mpv`);
+        const file_path = GLib.build_filenamev([GLib.get_home_dir(), 'mpv-window-details.json']);
+        const file = Gio.File.new_for_path(file_path);
+
+        // Check if the file exists
+        if (file.query_exists(null)) {
+            const [success, contents, _] = file.load_contents(null);
+            if (success) {
+                let jsonContent = contents.toString();
+                try {
+                    let data = JSON.parse(jsonContent);
+                    let { x, y, width, height } = data;
+                    window.move_resize_frame(true, x, y, width, height);
+                } catch (error) {
+                    log(`Error parsing JSON: ${error}`);
+                }
+            } else {
+                log(`Error loading file contents`);
+            }
+        } else {
+            log(`File does not exist: ${file_path}`);
+        }
     }
 
     onChanged(window) {
-        let winid = window.get_id();
+        // let winid = window.get_id();
         let wm_class = window.get_wm_class();
         let wm_class_instance = window.get_wm_class_instance();
 
@@ -56,7 +88,7 @@ class Extension {
 
     writeToFile(x, y, width, height) {
         log(`Writing to file`);
-        const file_path = GLib.build_filenamev([GLib.get_home_dir(), 'mpv-window-details.log']);
+        const file_path = GLib.build_filenamev([GLib.get_home_dir(), 'mpv-window-details.json']);
         const file = Gio.File.new_for_path(file_path);
         const outputStream = file.replace(null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
         // const outputStreamAppend = file.append_to(Gio.FileCreateFlags.NONE, null);
