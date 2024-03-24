@@ -56,7 +56,26 @@ class Extension {
                 try {
                     let data = JSON.parse(jsonContent);
                     let { x, y, width, height } = data;
-                    window.move_resize_frame(true, x, y, width, height);
+                    if (window) {
+                        if (window.minimized) {
+                            window.unminimize();
+                        }
+                        if (window.maximized_horizontally || window.maximized_vertically) {
+                            window.unmaximize(3);
+                        }
+                        log(`Resizing window to: width ${width}, height ${height}, x ${x}, and y ${y}`);
+                        // window.move_resize_frame(1, x, y, width, height);
+
+                        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                            window.move_resize_frame(1, x, y, width, height);
+                            return GLib.SOURCE_REMOVE;
+                        });
+
+                        window.activate(0);
+
+                    } else {
+                        throw new Error('Window not found');
+                    }
                 } catch (error) {
                     log(`Error parsing JSON: ${error}`);
                 }
