@@ -1,0 +1,12 @@
+{
+  "uuid": "restore-mpv-by-blueray453",
+  "name": "Restore MPV by blueray453",
+  "description": "Persistent mpv window positions",
+  "shell-version": [
+    "40",
+    "41",
+    "42",
+    "43"
+  ],
+  "url": "https://github.com/blueray453/restore-mpv-by-blueray453"
+}
