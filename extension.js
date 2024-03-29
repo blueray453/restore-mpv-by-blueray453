@@ -19,6 +19,8 @@
 /* exported init */
 const { Gio, GLib, GObject, Meta } = imports.gi;
 
+// improvements: use get_persistent_state and set_persistent_state instead of file
+
 class Extension {
     enable() {
         global.display.connect('window-created', this.onWindowCreated.bind(this));
