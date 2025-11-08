@@ -22,7 +22,10 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import GLib from 'gi://GLib';
 
+const windowManager = global.window_manager;
+
 export default class GnomeUtils extends Extension {
+
     enable() {
         const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
 
@@ -52,7 +55,7 @@ export default class GnomeUtils extends Extension {
         let wm_class = window.get_wm_class();
 
         if (wm_class === "mpv") {
-            const windowManager = global.window_manager;
+
             let destroyId = windowManager.connect('destroy', (_, actor) => {
                 // log(`Window is about to close`);
                 let window = actor.get_meta_window();
