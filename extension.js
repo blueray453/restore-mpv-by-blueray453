@@ -24,7 +24,6 @@ import GLib from 'gi://GLib';
 
 export default class GnomeUtils extends Extension {
     enable() {
-
         const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
 
         let stateVariant = GLib.Variant.new_tuple([
@@ -54,7 +53,7 @@ export default class GnomeUtils extends Extension {
 
         if (wm_class === "mpv") {
             const windowManager = global.window_manager;
-            let id = windowManager.connect('destroy', (_, actor) => {
+            let destroyId = windowManager.connect('destroy', (_, actor) => {
                 // log(`Window is about to close`);
                 let window = actor.get_meta_window();
                 let frameRect = window.get_frame_rect();
@@ -63,68 +62,48 @@ export default class GnomeUtils extends Extension {
                 let width = frameRect.width;
                 let height = frameRect.height;
 
-                log(`window properties before close: width ${width}, height ${height}, x ${x} and y ${y}`);
-
                 // this.writeToFile(x, y, width, height);
-                this.saveWindowState(x, y, width, height);
-                actor.disconnect(id);
+                let stateVariant = GLib.Variant.new_tuple([
+                    GLib.Variant.new_int32(x),
+                    GLib.Variant.new_int32(y),
+                    GLib.Variant.new_int32(width),
+                    GLib.Variant.new_int32(height)]
+                );
+
+                global.set_persistent_state('mpv_window_state', stateVariant);
+
+                actor.disconnect(destroyId);
             });
+
             // window.connect('position-changed', this.onChanged.bind(this));
             // window.connect('size-changed', this.onChanged.bind(this));
-            this.restoreWindow(window);
-        }
-    }
+            let stateVariant = global.get_persistent_state('(iiii)', 'mpv_window_state');
+            let [x, y, width, height] = stateVariant.deep_unpack();
 
-    restoreWindow(window) {
-        const state = this.getWindowState();
+            let state = { x, y, width, height };
 
-        if (state) {
-            let { x, y, width, height } = state;
+            if (state) {
+                let { x, y, width, height } = state;
 
-            log(`values got in restoreWindow: width ${width}, height ${height}, x ${x} and y ${y}`);
+                if (window) {
+                    if (window.minimized) {
+                        window.unminimize();
+                    }
+                    if (window.maximized_horizontally || window.maximized_vertically) {
+                        window.unmaximize(3);
+                    }
 
-            if (window) {
-                if (window.minimized) {
-                    window.unminimize();
+                    let actor = window.get_compositor_private();
+                    let firstFrameId = actor.connect('first-frame', _ => {
+                        window.move_resize_frame(1, x, y, width, height);
+                        actor.disconnect(firstFrameId);
+                    });
+
+                    window.activate(0);
+                } else {
+                    log(`Error: Window not found`);
                 }
-                if (window.maximized_horizontally || window.maximized_vertically) {
-                    window.unmaximize(3);
-                }
-
-                let actor = window.get_compositor_private();
-                let id = actor.connect('first-frame', _ => {
-                    window.move_resize_frame(1, x, y, width, height);
-                    actor.disconnect(id);
-                });
-
-                window.activate(0);
-            } else {
-                log(`Error: Window not found`);
             }
         }
     }
-
-    saveWindowState(x, y, width, height) {
-
-
-        let stateVariant = GLib.Variant.new_tuple([
-            GLib.Variant.new_int32(x),
-            GLib.Variant.new_int32(y),
-            GLib.Variant.new_int32(width),
-            GLib.Variant.new_int32(height)]
-        );
-
-        global.set_persistent_state('mpv_window_state', stateVariant);
-
-    }
-
-    getWindowState() {
-        let stateVariant = global.get_persistent_state('(iiii)', 'mpv_window_state');
-        let [x, y, width, height] = stateVariant.deep_unpack();
-
-        let return_value = { x, y, width, height };
-        return return_value;
-
-    }
-
 }
