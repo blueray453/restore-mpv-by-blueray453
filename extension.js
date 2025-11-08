@@ -17,9 +17,12 @@
  */
 
 /* exported init */
-const { Gio, GLib, GObject, Meta } = imports.gi;
 
-class Extension {
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+
+import GLib from 'gi://GLib';
+
+export default class GnomeUtils extends Extension {
     enable() {
 
         const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
@@ -48,9 +51,8 @@ class Extension {
         // log(`New window created: with id ${window.get_id()}`);
 
         let wm_class = window.get_wm_class();
-        let wm_class_instance = window.get_wm_class_instance();
 
-        if (wm_class === "mpv" && wm_class_instance === "gl") {
+        if (wm_class === "mpv") {
             const windowManager = global.window_manager;
             let id = windowManager.connect('destroy', (_, actor) => {
                 // log(`Window is about to close`);
@@ -242,9 +244,4 @@ class Extension {
     //     // outputStreamAppend.write_all(to_write, null);
     //     outputStream.write(to_write, null);
     // }
-}
-
-function init() {
-
-    return new Extension();
 }
