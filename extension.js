@@ -19,6 +19,7 @@
 /* exported init */
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { setLogging, setLogFn, journal } from './utils.js'
 
 import GLib from 'gi://GLib';
 
@@ -27,8 +28,34 @@ const windowManager = global.window_manager;
 export default class GnomeUtils extends Extension {
 
     enable() {
-        this.logger = this.getLogger();
-        this.logger.log("Enabled 123");
+        if (this.getLogger) {
+            // Use ExtensionBase's logger class on GNOME 48+
+            const logger = this.getLogger()
+
+            setLogFn(function (msg, error) {
+                if (error) {
+                    logger.error(msg)
+                } else {
+                    logger.log(msg)
+                }
+            })
+        }
+
+        setLogging(true)
+
+        // logs only if loggingEnabled=true
+        journal("This is a regular log message");
+
+        // always logs, even if logging is off
+        journal("This is an error message", true);
+
+        journal(`Enabled`)
+
+        // let testvar = "Test"
+        // journal(`Parsed saturation: ${testvar}`)
+        // console.log(`[restore-mpv-by-blueray453] Enabled ${testvar}`);
+        // this.logger = this.getLogger();
+        // this.logger.log("Enabled");
 
         const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
 
@@ -48,7 +75,8 @@ export default class GnomeUtils extends Extension {
     }
 
     disable() {
-        this.logger.log("Disabled 123");
+        journal(`Disabled`)
+        // this.logger.log("Disabled");
         // Disconnect all signal handlers when the extension is disabled
         // log(`restore mpv Disabled`);
     }
