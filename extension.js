@@ -59,16 +59,10 @@ export default class GnomeUtils extends Extension {
 
         const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
 
-        let stateVariant = new GLib.Variant('a{sv}',{
-            x: GLib.Variant.new_int32(initial_values.x),
-            y: GLib.Variant.new_int32(initial_values.y),
-            width: GLib.Variant.new_int32(initial_values.width),
-            height: GLib.Variant.new_int32(initial_values.height)
-        });
+        this.saveWindowState(initial_values);
+
         // log(`The type of stateVariant is ${stateVariant.get_type()}`);
         // log(`The type_string of stateVariant is ${stateVariant.get_type_string()}`);
-
-        global.set_persistent_state('mpv_window_state', stateVariant);
 
         global.display.connect('window-created', this.onWindowCreated.bind(this));
         // log(`restore mpv Enabled`);
@@ -79,6 +73,40 @@ export default class GnomeUtils extends Extension {
         // this.logger.log("Disabled");
         // Disconnect all signal handlers when the extension is disabled
         // log(`restore mpv Disabled`);
+    }
+
+    moveResizeWindow(window, { x, y, width, height }) {
+        if (!window) return;
+
+        // Unminimize if minimized
+        if (window.minimized) {
+            window.unminimize();
+        }
+
+        // Unmaximize if maximized
+        if (window.maximized_horizontally || window.maximized_vertically) {
+            window.unmaximize(3);
+        }
+
+        // Move and resize after first frame
+        const actor = window.get_compositor_private();
+        const firstFrameId = actor.connect('first-frame', () => {
+            window.move_resize_frame(1, x, y, width, height);
+            actor.disconnect(firstFrameId);
+        });
+
+        window.activate(0);
+    }
+
+    saveWindowState({ x, y, width, height }) {
+        const stateVariant = new GLib.Variant('a{sv}', {
+            x: GLib.Variant.new_int32(x),
+            y: GLib.Variant.new_int32(y),
+            width: GLib.Variant.new_int32(width),
+            height: GLib.Variant.new_int32(height)
+        });
+
+        global.set_persistent_state('mpv_window_state', stateVariant);
     }
 
     onWindowCreated(display, window) {
@@ -93,15 +121,7 @@ export default class GnomeUtils extends Extension {
                 let window = actor.get_meta_window();
                 let { x, y, width, height } = window.get_frame_rect();
 
-                // this.writeToFile(x, y, width, height);
-                let stateVariant = new GLib.Variant('a{sv}', {
-                    x: GLib.Variant.new_int32(x),
-                    y: GLib.Variant.new_int32(y),
-                    width: GLib.Variant.new_int32(width),
-                    height: GLib.Variant.new_int32(height)
-                });
-
-                global.set_persistent_state('mpv_window_state', stateVariant);
+                this.saveWindowState({ x, y, width, height });
 
                 actor.disconnect(destroyId);
             });
@@ -115,24 +135,7 @@ export default class GnomeUtils extends Extension {
             // this.logger.log(`width : ${width}`);
             // this.logger.log(`height : ${height}`);
 
-            if (window) {
-                if (window.minimized) {
-                    window.unminimize();
-                }
-                if (window.maximized_horizontally || window.maximized_vertically) {
-                    window.unmaximize(3);
-                }
-
-                let actor = window.get_compositor_private();
-                let firstFrameId = actor.connect('first-frame', _ => {
-                    window.move_resize_frame(1, x, y, width, height);
-                    actor.disconnect(firstFrameId);
-                });
-
-                window.activate(0);
-            } else {
-                log(`Error: Window not found`);
-            }
+            this.moveResizeWindow(window, { x, y, width, height });
         }
     }
 }
