@@ -116,7 +116,7 @@ export default class GnomeUtils extends Extension {
 
             let destroyId = windowManager.connect('destroy', (_, actor) => {
                 // log(`Window is about to close`);
-                let window = actor.get_meta_window();
+                // let window = actor.get_meta_window();
                 let { x, y, width, height } = window.get_frame_rect();
 
                 this.saveWindowState({ x, y, width, height });
