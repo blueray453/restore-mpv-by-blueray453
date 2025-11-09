@@ -51,18 +51,9 @@ export default class GnomeUtils extends Extension {
 
         journal(`Enabled`)
 
-        // // Get total screen dimensions
-        // const screenWidth = global.get_screen_width();
-        // const screenHeight = global.get_screen_height();
-
-        // journal(`screenWidth: ${screenWidth}`)
-        // journal(`screenHeight: ${screenHeight}`)
-
         // console.log(`[restore-mpv-by-blueray453] Enabled ${testvar}`);
 
-        const initial_values = { x: 100, y: 100, width: 1920, height: 1080 };
-
-        this.saveWindowState(initial_values);
+        global.set_persistent_state('mpv_window_state', null);
 
         this._windowCreatedId = global.display.connect('window-created', this.onWindowCreated.bind(this));
         // log(`restore mpv Enabled`);
@@ -77,12 +68,12 @@ export default class GnomeUtils extends Extension {
 
         journal(`Disabled`)
         // this.logger.log("Disabled");
-        // Disconnect all signal handlers when the extension is disabled
-        // log(`restore mpv Disabled`);
     }
 
     moveResizeWindow(window, { x, y, width, height }) {
         if (!window) return;
+
+        journal(`moving window`)
 
         // Unminimize if minimized
         if (window.minimized) {
@@ -116,11 +107,12 @@ export default class GnomeUtils extends Extension {
     }
 
     onWindowCreated(display, window) {
-        // log(`New window created: with id ${window.get_id()}`);
 
         let wm_class = window.get_wm_class();
 
         if (wm_class === "mpv") {
+
+            journal(`wm class is mpv`)
 
             let destroyId = windowManager.connect('destroy', (_, actor) => {
                 // log(`Window is about to close`);
@@ -132,9 +124,58 @@ export default class GnomeUtils extends Extension {
                 actor.disconnect(destroyId);
             });
 
+            let x, y, width, height;  // declare variables in outer scope
+
+            let my_state = global.get_persistent_state('a{sv}', 'mpv_window_state');
+
+            journal(`my_state: ${my_state}`)
+
+            if (my_state === null) {
+
+                journal(`my_state: is null`)
+
+                width = 1920;
+                height = 1080;
+
+                // const monitor = display.get_primary_monitor();
+                // const screenGeometry = display.get_monitor_geometry(monitor);
+                // const screenWidth = screenGeometry.width;
+                // const screenHeight = screenGeometry.height;
+                // journal(`screenWidth: ${screenWidth}`)
+                // journal(`screenHeight: ${screenHeight}`)
+
+                // // Get total screen dimensions
+                // const screenWidth = global.get_screen_width();
+                // const screenHeight = global.get_screen_height();
+                // Get total screen dimensions
+                const screenWidth = global.get_screen_width();
+                const screenHeight = global.get_screen_height();
+
+                // journal(`screenWidth: ${screenWidth}`)
+                // journal(`screenHeight: ${screenHeight}`)
+
+                x = Math.floor((screenWidth - width) / 2);
+                y = Math.floor((screenHeight - height) / 2);
+
+
+                // const initial_values = { x: 0, y: 0, width: 1920, height: 1080 };
+                // ({ x, y, width, height } = initial_values); // destructure assignment
+            } else {
+                journal(`my_state: is not null`)
+
+                journal(`my_state: ${my_state.print(true)}`);
+
+                ({ x, y, width, height } = my_state.recursiveUnpack()); // destructure assignment
+            }
+
             // window.connect('position-changed', this.onChanged.bind(this));
             // window.connect('size-changed', this.onChanged.bind(this));
-            let { x, y, width, height } = global.get_persistent_state('a{sv}', 'mpv_window_state').recursiveUnpack();
+
+            journal(`x: ${x}`)
+            journal(`y: ${y}`)
+            journal(`width: ${width}`)
+            journal(`height: ${height}`)
+
 
             this.moveResizeWindow(window, { x, y, width, height });
         }
