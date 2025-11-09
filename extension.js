@@ -51,15 +51,29 @@ export default class GnomeUtils extends Extension {
 
         journal(`Enabled`)
 
+        // const width = 1920;
+        // const height = 1080;
+
+        // // Get total screen dimensions
+        // const screenWidth = global.get_screen_width();
+        // const screenHeight = global.get_screen_height();
+
+        // journal(`screenWidth: ${screenWidth}`)
+        // journal(`screenHeight: ${screenHeight}`)
+
+        // // Calculate center position
+        // const x = Math.floor((screenWidth - width) / 2);
+        // const y = Math.floor((screenHeight - height) / 2);
+
         // let testvar = "Test"
         // journal(`Parsed saturation: ${testvar}`)
         // console.log(`[restore-mpv-by-blueray453] Enabled ${testvar}`);
         // this.logger = this.getLogger();
         // this.logger.log("Enabled");
 
-        const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
+        // const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
 
-        this.saveWindowState(initial_values);
+        // this.saveWindowState(initial_values);
 
         // log(`The type of stateVariant is ${stateVariant.get_type()}`);
         // log(`The type_string of stateVariant is ${stateVariant.get_type_string()}`);
