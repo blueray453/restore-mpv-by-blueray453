@@ -23,7 +23,7 @@ import { setLogging, setLogFn, journal } from './utils.js'
 
 import GLib from 'gi://GLib';
 
-const windowManager = global.window_manager;
+const windowManager = global.get_window_manager();
 
 export default class GnomeUtils extends Extension {
 
