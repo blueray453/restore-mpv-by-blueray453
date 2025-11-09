@@ -14,7 +14,7 @@ function journal(msg, error = false) {
         if (logFn) {
             logFn(msg, error)
         } else {
-            const output = `[Auto Accent Colour] ${msg}`
+            const output = `[Restore MPV by blueray453] ${msg}`
             if (error) {
                 console.error(output)
             } else {
