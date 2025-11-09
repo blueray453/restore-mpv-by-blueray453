@@ -24,6 +24,7 @@ import { setLogging, setLogFn, journal } from './utils.js'
 import GLib from 'gi://GLib';
 
 const windowManager = global.get_window_manager();
+const Display = global.get_display();
 
 export default class GnomeUtils extends Extension {
 
@@ -55,15 +56,20 @@ export default class GnomeUtils extends Extension {
 
         global.set_persistent_state('mpv_window_state', null);
 
-        this._windowCreatedId = global.display.connect('window-created', this.onWindowCreated.bind(this));
+        this._windowCreatedId = Display.connect('window-created', this.onWindowCreated.bind(this));
         // log(`restore mpv Enabled`);
+        this._destroyId = windowManager.connect('destroy', this.onWindowDestroy.bind(this));
     }
 
     disable() {
-
         if (this._windowCreatedId) {
-            global.display.disconnect(this._windowCreatedId);
+            Display.disconnect(this._windowCreatedId);
             this._windowCreatedId = null;
+        }
+
+        if (this._destroyId) {
+            windowManager.disconnect(this._destroyId);
+            this._destroyId = null;
         }
 
         journal(`Disabled`)
@@ -93,6 +99,8 @@ export default class GnomeUtils extends Extension {
         });
 
         window.activate(0);
+
+        journal(`moved window`)
     }
 
     saveWindowState({ x, y, width, height }) {
@@ -106,6 +114,23 @@ export default class GnomeUtils extends Extension {
         global.set_persistent_state('mpv_window_state', stateVariant);
     }
 
+    onWindowDestroy(_, actor) {
+        journal(`Window is about to close`);
+
+        let window = actor.get_meta_window();
+
+        let wm_class = window.get_wm_class();
+
+        if (wm_class === "mpv") {
+
+            window.unmake_fullscreen();
+
+            let { x, y, width, height } = window.get_frame_rect();
+
+            this.saveWindowState({ x, y, width, height });
+        }
+    }
+
     onWindowCreated(display, window) {
 
         let wm_class = window.get_wm_class();
@@ -113,16 +138,6 @@ export default class GnomeUtils extends Extension {
         if (wm_class === "mpv") {
 
             journal(`wm class is mpv`)
-
-            let destroyId = windowManager.connect('destroy', (_, actor) => {
-                // log(`Window is about to close`);
-                // let window = actor.get_meta_window();
-                let { x, y, width, height } = window.get_frame_rect();
-
-                this.saveWindowState({ x, y, width, height });
-
-                actor.disconnect(destroyId);
-            });
 
             let x, y, width, height;  // declare variables in outer scope
 
