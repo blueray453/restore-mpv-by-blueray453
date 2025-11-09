@@ -27,14 +27,17 @@ const windowManager = global.window_manager;
 export default class GnomeUtils extends Extension {
 
     enable() {
+        this.logger = this.getLogger();
+        this.logger.log("Enabled 123");
+
         const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
 
-        let stateVariant = GLib.Variant.new_tuple([
-            GLib.Variant.new_int32(initial_values.x),
-            GLib.Variant.new_int32(initial_values.y),
-            GLib.Variant.new_int32(initial_values.width),
-            GLib.Variant.new_int32(initial_values.height)]
-        );
+        let stateVariant = new GLib.Variant('a{sv}',{
+            x: GLib.Variant.new_int32(initial_values.x),
+            y: GLib.Variant.new_int32(initial_values.y),
+            width: GLib.Variant.new_int32(initial_values.width),
+            height: GLib.Variant.new_int32(initial_values.height)
+        });
         // log(`The type of stateVariant is ${stateVariant.get_type()}`);
         // log(`The type_string of stateVariant is ${stateVariant.get_type_string()}`);
 
@@ -45,6 +48,7 @@ export default class GnomeUtils extends Extension {
     }
 
     disable() {
+        this.logger.log("Disabled 123");
         // Disconnect all signal handlers when the extension is disabled
         // log(`restore mpv Disabled`);
     }
@@ -59,19 +63,15 @@ export default class GnomeUtils extends Extension {
             let destroyId = windowManager.connect('destroy', (_, actor) => {
                 // log(`Window is about to close`);
                 let window = actor.get_meta_window();
-                let frameRect = window.get_frame_rect();
-                let x = frameRect.x;
-                let y = frameRect.y;
-                let width = frameRect.width;
-                let height = frameRect.height;
+                let { x, y, width, height } = window.get_frame_rect();
 
                 // this.writeToFile(x, y, width, height);
-                let stateVariant = GLib.Variant.new_tuple([
-                    GLib.Variant.new_int32(x),
-                    GLib.Variant.new_int32(y),
-                    GLib.Variant.new_int32(width),
-                    GLib.Variant.new_int32(height)]
-                );
+                let stateVariant = new GLib.Variant('a{sv}', {
+                    x: GLib.Variant.new_int32(x),
+                    y: GLib.Variant.new_int32(y),
+                    width: GLib.Variant.new_int32(width),
+                    height: GLib.Variant.new_int32(height)
+                });
 
                 global.set_persistent_state('mpv_window_state', stateVariant);
 
@@ -80,32 +80,30 @@ export default class GnomeUtils extends Extension {
 
             // window.connect('position-changed', this.onChanged.bind(this));
             // window.connect('size-changed', this.onChanged.bind(this));
-            let stateVariant = global.get_persistent_state('(iiii)', 'mpv_window_state');
-            let [x, y, width, height] = stateVariant.deep_unpack();
+            let { x, y, width, height } = global.get_persistent_state('a{sv}', 'mpv_window_state').recursiveUnpack();
 
-            let state = { x, y, width, height };
+            // this.logger.log(`x : ${x}`);
+            // this.logger.log(`y : ${y}`);
+            // this.logger.log(`width : ${width}`);
+            // this.logger.log(`height : ${height}`);
 
-            if (state) {
-                let { x, y, width, height } = state;
-
-                if (window) {
-                    if (window.minimized) {
-                        window.unminimize();
-                    }
-                    if (window.maximized_horizontally || window.maximized_vertically) {
-                        window.unmaximize(3);
-                    }
-
-                    let actor = window.get_compositor_private();
-                    let firstFrameId = actor.connect('first-frame', _ => {
-                        window.move_resize_frame(1, x, y, width, height);
-                        actor.disconnect(firstFrameId);
-                    });
-
-                    window.activate(0);
-                } else {
-                    log(`Error: Window not found`);
+            if (window) {
+                if (window.minimized) {
+                    window.unminimize();
                 }
+                if (window.maximized_horizontally || window.maximized_vertically) {
+                    window.unmaximize(3);
+                }
+
+                let actor = window.get_compositor_private();
+                let firstFrameId = actor.connect('first-frame', _ => {
+                    window.move_resize_frame(1, x, y, width, height);
+                    actor.disconnect(firstFrameId);
+                });
+
+                window.activate(0);
+            } else {
+                log(`Error: Window not found`);
             }
         }
     }
