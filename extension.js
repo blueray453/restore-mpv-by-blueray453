@@ -137,6 +137,9 @@ export default class GnomeUtils extends Extension {
                 width = 1920;
                 height = 1080;
 
+                x = 0;
+                y = 0;
+
                 // const monitor = display.get_primary_monitor();
                 // const screenGeometry = display.get_monitor_geometry(monitor);
                 // const screenWidth = screenGeometry.width;
@@ -144,18 +147,18 @@ export default class GnomeUtils extends Extension {
                 // journal(`screenWidth: ${screenWidth}`)
                 // journal(`screenHeight: ${screenHeight}`)
 
+                // // // Get total screen dimensions
+                // // const screenWidth = global.get_screen_width();
+                // // const screenHeight = global.get_screen_height();
                 // // Get total screen dimensions
                 // const screenWidth = global.get_screen_width();
                 // const screenHeight = global.get_screen_height();
-                // Get total screen dimensions
-                const screenWidth = global.get_screen_width();
-                const screenHeight = global.get_screen_height();
 
-                // journal(`screenWidth: ${screenWidth}`)
-                // journal(`screenHeight: ${screenHeight}`)
+                // // journal(`screenWidth: ${screenWidth}`)
+                // // journal(`screenHeight: ${screenHeight}`)
 
-                x = Math.floor((screenWidth - width) / 2);
-                y = Math.floor((screenHeight - height) / 2);
+                // x = Math.floor((screenWidth - width) / 2);
+                // y = Math.floor((screenHeight - height) / 2);
 
 
                 // const initial_values = { x: 0, y: 0, width: 1920, height: 1080 };
