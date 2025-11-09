@@ -43,16 +43,13 @@ export default class GnomeUtils extends Extension {
 
         setLogging(true)
 
-        // logs only if loggingEnabled=true
-        journal("This is a regular log message");
+        // // logs only if loggingEnabled=true
+        // journal("This is a regular log message");
 
-        // always logs, even if logging is off
-        journal("This is an error message", true);
+        // // always logs, even if logging is off
+        // journal("This is an error message", true);
 
         journal(`Enabled`)
-
-        // const width = 1920;
-        // const height = 1080;
 
         // // Get total screen dimensions
         // const screenWidth = global.get_screen_width();
@@ -61,28 +58,19 @@ export default class GnomeUtils extends Extension {
         // journal(`screenWidth: ${screenWidth}`)
         // journal(`screenHeight: ${screenHeight}`)
 
-        // // Calculate center position
-        // const x = Math.floor((screenWidth - width) / 2);
-        // const y = Math.floor((screenHeight - height) / 2);
-
-        // let testvar = "Test"
-        // journal(`Parsed saturation: ${testvar}`)
         // console.log(`[restore-mpv-by-blueray453] Enabled ${testvar}`);
-        // this.logger = this.getLogger();
-        // this.logger.log("Enabled");
 
-        // const initial_values = { x: 50, y: 100, width: 1920, height: 1080 };
-
-        // this.saveWindowState(initial_values);
-
-        // log(`The type of stateVariant is ${stateVariant.get_type()}`);
-        // log(`The type_string of stateVariant is ${stateVariant.get_type_string()}`);
-
-        global.display.connect('window-created', this.onWindowCreated.bind(this));
+        this._windowCreatedId = global.display.connect('window-created', this.onWindowCreated.bind(this));
         // log(`restore mpv Enabled`);
     }
 
     disable() {
+
+        if (this._windowCreatedId) {
+            global.display.disconnect(this._windowCreatedId);
+            this._windowCreatedId = null;
+        }
+
         journal(`Disabled`)
         // this.logger.log("Disabled");
         // Disconnect all signal handlers when the extension is disabled
@@ -143,11 +131,6 @@ export default class GnomeUtils extends Extension {
             // window.connect('position-changed', this.onChanged.bind(this));
             // window.connect('size-changed', this.onChanged.bind(this));
             let { x, y, width, height } = global.get_persistent_state('a{sv}', 'mpv_window_state').recursiveUnpack();
-
-            // this.logger.log(`x : ${x}`);
-            // this.logger.log(`y : ${y}`);
-            // this.logger.log(`width : ${width}`);
-            // this.logger.log(`height : ${height}`);
 
             this.moveResizeWindow(window, { x, y, width, height });
         }
