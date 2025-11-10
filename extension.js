@@ -22,6 +22,7 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import { setLogging, setLogFn, journal } from './utils.js'
 
 import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 
 const windowManager = global.get_window_manager();
 const Display = global.get_display();
@@ -45,6 +46,8 @@ export default class GnomeUtils extends Extension {
         // }
 
         // journalctl -f -o cat SYSLOG_IDENTIFIER=restore-mpv-by-blueray453
+        // journalctl -f -o verbose SYSLOG_IDENTIFIER=restore-mpv-by-blueray453
+        // journalctl -f -o json SYSLOG_IDENTIFIER=restore-mpv-by-blueray453 | jq -r '."CODE_FILE", ."MESSAGE"'
 
         setLogFn((msg, error = false) => {
             let level;
@@ -59,7 +62,8 @@ export default class GnomeUtils extends Extension {
                 level,
                 {
                     MESSAGE: `${msg}`,
-                    SYSLOG_IDENTIFIER: 'restore-mpv-by-blueray453'
+                    SYSLOG_IDENTIFIER: 'restore-mpv-by-blueray453',
+                    CODE_FILE: GLib.filename_from_uri(import.meta.url)[0]
                 }
             );
         });
