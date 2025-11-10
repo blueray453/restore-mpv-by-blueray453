@@ -22,7 +22,6 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import { setLogging, setLogFn, journal } from './utils.js'
 
 import GLib from 'gi://GLib';
-import Gio from 'gi://Gio';
 
 const windowManager = global.get_window_manager();
 const Display = global.get_display();
