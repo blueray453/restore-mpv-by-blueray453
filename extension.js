@@ -58,7 +58,7 @@ export default class GnomeUtils extends Extension {
 
         this._windowCreatedId = Display.connect('window-created', this.onWindowCreated.bind(this));
         // log(`restore mpv Enabled`);
-        this._destroyId = windowManager.connect('destroy', this.onWindowDestroy.bind(this));
+        this._WindowDestroyId = windowManager.connect('destroy', this.onWindowDestroy.bind(this));
     }
 
     disable() {
@@ -67,9 +67,9 @@ export default class GnomeUtils extends Extension {
             this._windowCreatedId = null;
         }
 
-        if (this._destroyId) {
-            windowManager.disconnect(this._destroyId);
-            this._destroyId = null;
+        if (this._WindowDestroyId) {
+            windowManager.disconnect(this._WindowDestroyId);
+            this._WindowDestroyId = null;
         }
 
         journal(`Disabled`)
