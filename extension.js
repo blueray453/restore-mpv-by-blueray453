@@ -150,7 +150,10 @@ export default class GnomeUtils extends Extension {
 
         if (wm_class === "mpv") {
 
-            window.unmake_fullscreen();
+            if (window.is_fullscreen()){
+                window.unmake_fullscreen();
+                journal(`unmaking fullscreen`);
+            }
 
             let { x, y, width, height } = window.get_frame_rect();
 
