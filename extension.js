@@ -29,18 +29,41 @@ const Display = global.get_display();
 export default class GnomeUtils extends Extension {
 
     enable() {
-        if (this.getLogger) {
-            // Use ExtensionBase's logger class on GNOME 48+
-            const logger = this.getLogger()
+        // // journalctl /usr/bin/gnome-shell -f -o cat | grep "\[Restore MPV by blueray453\]"
 
-            setLogFn(function (msg, error) {
-                if (error) {
-                    logger.error(msg)
-                } else {
-                    logger.log(msg)
+        // if (this.getLogger) {
+        //     // Use ExtensionBase's logger class on GNOME 48+
+        //     const logger = this.getLogger()
+
+        //     setLogFn(function (msg, error) {
+        //         if (error) {
+        //             logger.error(msg)
+        //         } else {
+        //             logger.log(msg)
+        //         }
+        //     })
+        // }
+
+        // journalctl -f -o cat SYSLOG_IDENTIFIER=restore-mpv-by-blueray453
+
+        setLogFn((msg, error = false) => {
+            let level;
+            if (error) {
+                level = GLib.LogLevelFlags.LEVEL_CRITICAL;
+            } else {
+                level = GLib.LogLevelFlags.LEVEL_MESSAGE;
+            }
+
+            GLib.log_structured(
+                'restore-mpv-by-blueray453',
+                level,
+                {
+                    MESSAGE: `${msg}`,
+                    SYSLOG_IDENTIFIER: 'restore-mpv-by-blueray453'
                 }
-            })
-        }
+            );
+        });
+
 
         setLogging(true)
 
@@ -141,13 +164,13 @@ export default class GnomeUtils extends Extension {
 
             let x, y, width, height;  // declare variables in outer scope
 
-            let my_state = global.get_persistent_state('a{sv}', 'mpv_window_state');
+            let mpvWindowState = global.get_persistent_state('a{sv}', 'mpv_window_state');
 
-            journal(`my_state: ${my_state}`)
+            journal(`mpvWindowState: ${mpvWindowState}`)
 
-            if (my_state === null) {
+            if (mpvWindowState === null) {
 
-                journal(`my_state: is null`)
+                journal(`mpvWindowState: is null`)
 
                 width = 1920;
                 height = 1080;
@@ -178,12 +201,20 @@ export default class GnomeUtils extends Extension {
 
                 // const initial_values = { x: 0, y: 0, width: 1920, height: 1080 };
                 // ({ x, y, width, height } = initial_values); // destructure assignment
+
             } else {
-                journal(`my_state: is not null`)
+                journal(`mpvWindowState: is not null`)
 
-                journal(`my_state: ${my_state.print(true)}`);
+                journal(`mpvWindowState: ${mpvWindowState.print(true)}`);
 
-                ({ x, y, width, height } = my_state.recursiveUnpack()); // destructure assignment
+                // ({ x, y, width, height } = mpvWindowState.recursiveUnpack()); // destructure assignment
+
+                let windowGeometry = mpvWindowState.recursiveUnpack();
+
+                x = windowGeometry.x;
+                y = windowGeometry.y;
+                width = windowGeometry.width;
+                height = windowGeometry.height;
             }
 
             // window.connect('position-changed', this.onChanged.bind(this));
@@ -193,7 +224,6 @@ export default class GnomeUtils extends Extension {
             journal(`y: ${y}`)
             journal(`width: ${width}`)
             journal(`height: ${height}`)
-
 
             this.moveResizeWindow(window, { x, y, width, height });
         }
