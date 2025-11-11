@@ -166,72 +166,21 @@ export default class GnomeUtils extends Extension {
 
         if (wm_class === "mpv") {
 
-            journal(`wm class is mpv`)
-
-            let x, y, width, height;  // declare variables in outer scope
+            journal(`wm class is mpv`);
 
             let mpvWindowState = global.get_persistent_state('a{sv}', 'mpv_window_state');
 
-            journal(`mpvWindowState: ${mpvWindowState}`)
+            if (mpvWindowState !== null) {
+                let { x, y, width, height } = mpvWindowState.recursiveUnpack(); // destructure assignment
 
-            if (mpvWindowState === null) {
+                // journal(`x: ${x}`)
+                // journal(`y: ${y}`)
+                // journal(`width: ${width}`)
+                // journal(`height: ${height}`)
 
-                journal(`mpvWindowState: is null`)
+                this.moveResizeWindow(window, { x, y, width, height });
 
-                width = 1920;
-                height = 1080;
-
-                x = 0;
-                y = 0;
-
-                // const monitor = display.get_primary_monitor();
-                // const screenGeometry = display.get_monitor_geometry(monitor);
-                // const screenWidth = screenGeometry.width;
-                // const screenHeight = screenGeometry.height;
-                // journal(`screenWidth: ${screenWidth}`)
-                // journal(`screenHeight: ${screenHeight}`)
-
-                // // // Get total screen dimensions
-                // // const screenWidth = global.get_screen_width();
-                // // const screenHeight = global.get_screen_height();
-                // // Get total screen dimensions
-                // const screenWidth = global.get_screen_width();
-                // const screenHeight = global.get_screen_height();
-
-                // // journal(`screenWidth: ${screenWidth}`)
-                // // journal(`screenHeight: ${screenHeight}`)
-
-                // x = Math.floor((screenWidth - width) / 2);
-                // y = Math.floor((screenHeight - height) / 2);
-
-
-                // const initial_values = { x: 0, y: 0, width: 1920, height: 1080 };
-                // ({ x, y, width, height } = initial_values); // destructure assignment
-
-            } else {
-                journal(`mpvWindowState: is not null`)
-
-                journal(`mpvWindowState: ${mpvWindowState.print(true)}`);
-
-                // ({ x, y, width, height } = mpvWindowState.recursiveUnpack()); // destructure assignment
-
-                let windowGeometry = mpvWindowState.recursiveUnpack();
-
-                x = windowGeometry.x;
-                y = windowGeometry.y;
-                width = windowGeometry.width;
-                height = windowGeometry.height;
             }
-
-            // window.connect('position-changed', this.onChanged.bind(this));
-            // window.connect('size-changed', this.onChanged.bind(this));
-
-            journal(`x: ${x}`)
-            journal(`y: ${y}`)
-            journal(`width: ${width}`)
-            journal(`height: ${height}`)
-
-            this.moveResizeWindow(window, { x, y, width, height });
         }
     }
 }
