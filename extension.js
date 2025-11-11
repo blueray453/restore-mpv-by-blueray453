@@ -80,7 +80,7 @@ export default class GnomeUtils extends Extension {
 
         // console.log(`[restore-mpv-by-blueray453] Enabled ${testvar}`);
 
-        global.set_persistent_state('mpv_window_state', null);
+        // global.set_persistent_state('mpv_window_state', null);
 
         this._windowCreatedId = Display.connect('window-created', this.onWindowCreated.bind(this));
         // log(`restore mpv Enabled`);
