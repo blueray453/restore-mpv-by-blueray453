@@ -120,9 +120,15 @@ export default class GnomeUtils extends Extension {
         // Move and resize after first frame
         const actor = window.get_compositor_private();
         const firstFrameId = actor.connect('first-frame', () => {
+            window.move_frame(1, x, y);
             window.move_resize_frame(1, x, y, width, height);
             actor.disconnect(firstFrameId);
         });
+
+        // GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        //     window.move_resize_frame(1, x, y, width, height);
+        //     return GLib.SOURCE_REMOVE; // important to avoid repeated execution
+        // });
 
         window.activate(0);
 
