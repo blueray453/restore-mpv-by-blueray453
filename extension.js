@@ -105,7 +105,7 @@ export default class GnomeUtils extends Extension {
     moveResizeWindow(window, { x, y, width, height }) {
         if (!window) return;
 
-        journal(`moving window`)
+        journal(`moving window`);
 
         // Unminimize if minimized
         if (window.minimized) {
@@ -119,16 +119,42 @@ export default class GnomeUtils extends Extension {
 
         // Move and resize after first frame
         const actor = window.get_compositor_private();
+
         const firstFrameId = actor.connect('first-frame', () => {
+
             window.move_frame(1, x, y);
             window.move_resize_frame(1, x, y, width, height);
+
             actor.disconnect(firstFrameId);
         });
 
-        // GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-        //     window.move_resize_frame(1, x, y, width, height);
-        //     return GLib.SOURCE_REMOVE; // important to avoid repeated execution
-        // });
+        const secondFrameId = actor.connect('first-frame', () => {
+            let workArea = window.get_work_area_current_monitor();
+                // get the final real size
+            let rect = window.get_frame_rect();
+            let second_x = rect.x;
+            let second_y = rect.y;
+            let second_width = rect.width;
+            let second_height = rect.height;
+
+            const fitsHorizontally =
+                second_x >= 0 &&
+                (second_x + second_width) <= workArea.width;
+
+            const fitsVertically =
+                second_y >= 0 &&
+                (second_y + second_height) <= workArea.height;
+
+            journal(`fitsHorizontally: ${fitsHorizontally}`);
+            journal(`fitsVertically: ${fitsVertically}`);
+
+            if (!fitsHorizontally || !fitsVertically) {
+                window.move_frame(1, 0, 0);
+            }
+
+            actor.disconnect(secondFrameId);
+        });
+
 
         window.activate(0);
 
@@ -185,7 +211,6 @@ export default class GnomeUtils extends Extension {
                 // journal(`height: ${height}`)
 
                 this.moveResizeWindow(window, { x, y, width, height });
-
             }
         }
     }
