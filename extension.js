@@ -124,6 +124,7 @@ export default class GnomeUtils extends Extension {
 
         const firstFrameId = actor.connect('first-frame', () => {
 
+            window.move_frame(1, x, y);
             window.move_resize_frame(1, x, y, width, height);
 
             actor.disconnect(firstFrameId);
@@ -150,7 +151,10 @@ export default class GnomeUtils extends Extension {
             journal(`fitsVertically: ${fitsVertically}`);
 
             if (!fitsHorizontally || !fitsVertically) {
-                window.move_frame(1, 0, 0);
+                const centerX = (workArea.width - second_width) / 2;
+                const centerY = (workArea.height - second_height) / 2;
+
+                window.move_frame(1, centerX, centerY);
             }
 
             actor.disconnect(secondFrameId);
