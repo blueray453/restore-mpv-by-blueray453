@@ -107,14 +107,16 @@ export default class GnomeUtils extends Extension {
 
         journal(`moving window`);
 
-        // Unminimize if minimized
-        if (window.minimized) {
-            window.unminimize();
+        if (window.fullscreen) {
+            window.unmake_fullscreen();
         }
 
-        // Unmaximize if maximized
-        if (window.maximized_horizontally || window.maximized_vertically) {
-            window.unmaximize(3);
+        if (window.maximized_horizontally) {
+            window.unmaximize(1);
+        }
+
+        if (window.maximized_vertically) {
+            window.unmaximize(2);
         }
 
         // Move and resize after first frame
@@ -122,7 +124,6 @@ export default class GnomeUtils extends Extension {
 
         const firstFrameId = actor.connect('first-frame', () => {
 
-            window.move_frame(1, x, y);
             window.move_resize_frame(1, x, y, width, height);
 
             actor.disconnect(firstFrameId);
