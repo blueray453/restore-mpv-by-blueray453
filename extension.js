@@ -160,7 +160,6 @@ export default class GnomeUtils extends Extension {
             actor.disconnect(secondFrameId);
         });
 
-
         window.activate(0);
 
         journal(`moved window`)
