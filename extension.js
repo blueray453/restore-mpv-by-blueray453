@@ -19,7 +19,13 @@
 /* exported init */
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-import { setLogging, setLogFn, journal } from './utils.js'
+
+import {
+    initLogging,
+    createLogger,
+} from './logger.js';
+
+const journal = createLogger(import.meta.url);
 
 import GLib from 'gi://GLib';
 
@@ -29,6 +35,8 @@ const Display = global.get_display();
 export default class GnomeUtils extends Extension {
 
     enable() {
+        initLogging(this.uuid, 'both', false);
+        journal(`Enabled`);
         // // journalctl /usr/bin/gnome-shell -f -o cat | grep "\[Restore MPV by blueray453\]"
 
         // if (this.getLogger) {
@@ -47,36 +55,6 @@ export default class GnomeUtils extends Extension {
         // journalctl -f -o cat SYSLOG_IDENTIFIER=restore-mpv-by-blueray453
         // journalctl -f -o verbose SYSLOG_IDENTIFIER=restore-mpv-by-blueray453
         // journalctl -f -o json SYSLOG_IDENTIFIER=restore-mpv-by-blueray453 | jq -r '."CODE_FILE", ."MESSAGE"'
-
-        setLogFn((msg, error = false) => {
-            let level;
-            if (error) {
-                level = GLib.LogLevelFlags.LEVEL_CRITICAL;
-            } else {
-                level = GLib.LogLevelFlags.LEVEL_MESSAGE;
-            }
-
-            GLib.log_structured(
-                'restore-mpv-by-blueray453',
-                level,
-                {
-                    MESSAGE: `${msg}`,
-                    SYSLOG_IDENTIFIER: 'restore-mpv-by-blueray453',
-                    CODE_FILE: GLib.filename_from_uri(import.meta.url)[0]
-                }
-            );
-        });
-
-
-        setLogging(true)
-
-        // // logs only if loggingEnabled=true
-        // journal("This is a regular log message");
-
-        // // always logs, even if logging is off
-        // journal("This is an error message", true);
-
-        journal(`Enabled`)
 
         // console.log(`[restore-mpv-by-blueray453] Enabled ${testvar}`);
 
